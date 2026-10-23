@@ -1,0 +1,41 @@
+# ==========================================
+# CRITICAL SECURITY IGNORES (WALLET & SECRETS)
+# ==========================================
+# Private keys, mnemonics, wallet lists
+wallets.txt
+wallets*.txt
+*.key
+*.pem
+*.keystore
+
+# Environment files with sensitive credentials
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Runtime caches & state
+used_tickers.json
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies
+node_modules/
+jspm_packages/
+
+# System and OS files
+.DS_Store
+Thumbs.db
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build / scratch artifacts
+scratch/
+tmp/
+dist/
