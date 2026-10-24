@@ -79,31 +79,31 @@ async function runTasksForWallet(client, wallet, index, total, nextWalletAddress
         if (!results['Auras Liquidity'].skipped) await sleep(getRandomDelay(4000, 7000));
     }
 
-    // 6. Deploy Smart Contract (Solana Memecoin clean ticker, no numbers)
+    // 7. Deploy Smart Contract (Solana Memecoin clean ticker, no numbers)
     if (process.env.ENABLE_CONTRACT_DEPLOY !== 'false') {
         results['Deploy Contract'] = await runOrSkipTask(wallet.address, 'Deploy Contract', () => executeDeployContract(client, wallet));
         if (!results['Deploy Contract'].skipped) await sleep(getRandomDelay(4000, 7000));
     }
 
-    // 7. AsePad Buy (Quest: "Buy or sell a token on AsePad")
+    // 8. AsePad Buy (Quest: "Buy or sell a token on AsePad")
     if (process.env.ENABLE_ASEPAD_BUY !== 'false') {
         results['AsePad (Buy/Sell)'] = await runOrSkipTask(wallet.address, 'AsePad (Buy/Sell)', () => executeAsepadBuy(client, wallet));
         if (!results['AsePad (Buy/Sell)'].skipped) await sleep(getRandomDelay(4000, 7000));
     }
 
-    // 8. AseBet (Quest: "Place 2 bets on AseBet")
+    // 9. AseBet (Quest: "Place 2 bets on AseBet")
     if (process.env.ENABLE_ASEBET !== 'false') {
         results['AseBet (2 Bets)'] = await runOrSkipTask(wallet.address, 'AseBet (2 Bets)', () => executeAseBet(client, wallet, 2));
         if (!results['AseBet (2 Bets)'].skipped) await sleep(getRandomDelay(4000, 7000));
     }
 
-    // 9. ASE Vegas Treasure (Quest: "Dig a cell in the ASE Vegas Treasure hunt")
+    // 10. ASE Vegas Treasure (Quest: "Dig a cell in the ASE Vegas Treasure hunt")
     if (process.env.ENABLE_TREASURE_HUNT !== 'false') {
         results['Treasure Hunt (Dig)'] = await runOrSkipTask(wallet.address, 'Treasure Hunt (Dig)', () => executeTreasureDig(client, wallet));
         if (!results['Treasure Hunt (Dig)'].skipped) await sleep(getRandomDelay(3000, 6000));
     }
 
-    // 10. Validator Status (Quest: "Sign a block as a validator")
+    // 11. Validator Status (Quest: "Sign a block as a validator")
     results['Validator Sign Block'] = await checkValidatorStatus(client, wallet);
 
     return results;
