@@ -16,6 +16,8 @@ wallets*.txt
 
 # Runtime caches & state
 used_tickers.json
+daily_history.json
+history*.json
 *.log
 npm-debug.log*
 yarn-debug.log*

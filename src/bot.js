@@ -11,6 +11,7 @@ import { checkValidatorStatus } from './tasks/validatorCheck.js';
 import { executeAsepadBuy } from './tasks/asepad.js';
 import { executeAseBet } from './tasks/asebet.js';
 import { executeTreasureDig } from './tasks/treasureHunt.js';
+import { runOrSkipTask } from './utils/dailyTracker.js';
 import { getRandomDelay } from './utils/randomizer.js';
 
 function sleep(ms) {
@@ -42,56 +43,57 @@ async function runTasksForWallet(client, wallet, index, total, nextWalletAddress
 
     // 1. Social Profile & Post (social.asentum.com)
     if (process.env.ENABLE_SOCIAL_POST !== 'false') {
-        results['ASocial Profile'] = await executeSetProfile(client, wallet);
-        await sleep(getRandomDelay(2500, 4500));
-        results['ASocial Post'] = await executeSocialPost(client, wallet);
-        await sleep(getRandomDelay(3500, 6000));
+        results['ASocial Profile'] = await runOrSkipTask(wallet.address, 'ASocial Profile', () => executeSetProfile(client, wallet));
+        if (!results['ASocial Profile'].skipped) await sleep(getRandomDelay(2500, 4500));
+
+        results['ASocial Post'] = await runOrSkipTask(wallet.address, 'ASocial Post', () => executeSocialPost(client, wallet));
+        if (!results['ASocial Post'].skipped) await sleep(getRandomDelay(3500, 6000));
     }
 
     // 2. Transfer ASE (Daisy-chain to next wallet if multi-account)
     if (process.env.ENABLE_SEND_ASE !== 'false') {
-        results['Send ASE'] = await executeTransfer(client, wallet, nextWalletAddress);
-        await sleep(getRandomDelay(3500, 6000));
+        results['Send ASE'] = await runOrSkipTask(wallet.address, 'Send ASE', () => executeTransfer(client, wallet, nextWalletAddress));
+        if (!results['Send ASE'].skipped) await sleep(getRandomDelay(3500, 6000));
     }
 
     // 3. Swap on Auras DEX
     if (process.env.ENABLE_AURAS_SWAP !== 'false') {
-        results['Auras Swap'] = await executeAurasSwap(client, wallet);
-        await sleep(getRandomDelay(4000, 7000));
+        results['Auras Swap'] = await runOrSkipTask(wallet.address, 'Auras Swap', () => executeAurasSwap(client, wallet));
+        if (!results['Auras Swap'].skipped) await sleep(getRandomDelay(4000, 7000));
     }
 
     // 4. Swap on AseDex (Quest: "Make a swap on AseDex")
-    results['AseDex Swap'] = await executeAseDexSwap(client, wallet);
-    await sleep(getRandomDelay(4000, 7000));
+    results['AseDex Swap'] = await runOrSkipTask(wallet.address, 'AseDex Swap', () => executeAseDexSwap(client, wallet));
+    if (!results['AseDex Swap'].skipped) await sleep(getRandomDelay(4000, 7000));
 
     // 5. Add Liquidity on Auras DEX
     if (process.env.ENABLE_AURAS_LIQUIDITY !== 'false') {
-        results['Auras Liquidity'] = await executeAurasLiquidity(client, wallet);
-        await sleep(getRandomDelay(4000, 7000));
+        results['Auras Liquidity'] = await runOrSkipTask(wallet.address, 'Auras Liquidity', () => executeAurasLiquidity(client, wallet));
+        if (!results['Auras Liquidity'].skipped) await sleep(getRandomDelay(4000, 7000));
     }
 
     // 6. Deploy Smart Contract (Solana Memecoin clean ticker, no numbers)
     if (process.env.ENABLE_CONTRACT_DEPLOY !== 'false') {
-        results['Deploy Contract'] = await executeDeployContract(client, wallet);
-        await sleep(getRandomDelay(4000, 7000));
+        results['Deploy Contract'] = await runOrSkipTask(wallet.address, 'Deploy Contract', () => executeDeployContract(client, wallet));
+        if (!results['Deploy Contract'].skipped) await sleep(getRandomDelay(4000, 7000));
     }
 
     // 7. AsePad Buy (Quest: "Buy or sell a token on AsePad")
     if (process.env.ENABLE_ASEPAD_BUY !== 'false') {
-        results['AsePad (Buy/Sell)'] = await executeAsepadBuy(client, wallet);
-        await sleep(getRandomDelay(4000, 7000));
+        results['AsePad (Buy/Sell)'] = await runOrSkipTask(wallet.address, 'AsePad (Buy/Sell)', () => executeAsepadBuy(client, wallet));
+        if (!results['AsePad (Buy/Sell)'].skipped) await sleep(getRandomDelay(4000, 7000));
     }
 
     // 8. AseBet (Quest: "Place 2 bets on AseBet")
     if (process.env.ENABLE_ASEBET !== 'false') {
-        results['AseBet (2 Bets)'] = await executeAseBet(client, wallet, 2);
-        await sleep(getRandomDelay(4000, 7000));
+        results['AseBet (2 Bets)'] = await runOrSkipTask(wallet.address, 'AseBet (2 Bets)', () => executeAseBet(client, wallet, 2));
+        if (!results['AseBet (2 Bets)'].skipped) await sleep(getRandomDelay(4000, 7000));
     }
 
     // 9. ASE Vegas Treasure (Quest: "Dig a cell in the ASE Vegas Treasure hunt")
     if (process.env.ENABLE_TREASURE_HUNT !== 'false') {
-        results['Treasure Hunt (Dig)'] = await executeTreasureDig(client, wallet);
-        await sleep(getRandomDelay(3000, 6000));
+        results['Treasure Hunt (Dig)'] = await runOrSkipTask(wallet.address, 'Treasure Hunt (Dig)', () => executeTreasureDig(client, wallet));
+        if (!results['Treasure Hunt (Dig)'].skipped) await sleep(getRandomDelay(3000, 6000));
     }
 
     // 10. Validator Status (Quest: "Sign a block as a validator")
@@ -147,17 +149,20 @@ export async function runBot() {
     for (let i = 0; i < allResults.length; i++) {
         const item = allResults[i];
         let successCount = 0;
+        let skippedCount = 0;
         let failCount = 0;
 
         for (const [task, r] of Object.entries(item.results)) {
-            if (r && r.success) successCount++;
+            if (r && r.skipped) skippedCount++;
+            else if (r && r.success) successCount++;
             else if (r && !r.reason && r.isValidator === undefined) failCount++;
         }
 
         console.log(
             `Akun #${i + 1} (${item.wallet.substring(0, 14)}...${item.wallet.slice(-6)}): ` +
-            chalk.green(`${successCount} Sukses`) + ' | ' +
-            (failCount > 0 ? chalk.red(`${failCount} Gagal/Skip`) : chalk.gray('0 Gagal'))
+            chalk.green(`${successCount} Sukses Baru`) + ' | ' +
+            chalk.cyan(`${skippedCount} Sudah Selesai Hari Ini`) + ' | ' +
+            (failCount > 0 ? chalk.red(`${failCount} Gagal`) : chalk.gray('0 Gagal'))
         );
     }
     console.log(chalk.bold.magenta('========================================================\n'));
