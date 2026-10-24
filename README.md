@@ -12,7 +12,8 @@ Perangkat baris perintah (CLI) untuk interaksi jaringan dan pengujian fungsi on-
 6. Deploy Smart Contract: Deployment smart contract token berbasis JavaScript VM dengan ticker memecoin Solana unik.
 7. AsePad Buy: Pembelian token bonding curve pada platform AsePad (`ase1r57zd8sstugu4km2axf7ar85q0fj793vdlzt6v`).
 8. AseBet: Penempatan taruhan pada pasar prediksi terbuka di AseBet (`0xc91aef943a1a0e587e6b57959de0692d1a704879`).
-9. Validator Monitor: Pengecekan status node dan riwayat penandatanganan blok validator.
+9. ASE Vegas Treasure: Penggalian petak sel (dig a cell) pada game perburuan harta karun (`ase1znfss8jyag09x9c570cjn5cyxk3v6zta3z27lr`).
+10. Validator Monitor: Pengecekan status node dan riwayat penandatanganan blok validator.
 
 ## Kebijakan Transaksi
 
@@ -69,6 +70,14 @@ Untuk memasang taruhan di AseBet:
 
 ```bash
 npm run bet:asebet
+```
+
+### Eksekusi ASE Vegas Treasure Saja
+
+Untuk menggali sel di ASE Vegas Treasure:
+
+```bash
+npm run dig:treasure
 ```
 
 ### Penjadwal Harian

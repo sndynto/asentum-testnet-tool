@@ -10,6 +10,7 @@ import { executeDeployContract } from './tasks/deployContract.js';
 import { checkValidatorStatus } from './tasks/validatorCheck.js';
 import { executeAsepadBuy } from './tasks/asepad.js';
 import { executeAseBet } from './tasks/asebet.js';
+import { executeTreasureDig } from './tasks/treasureHunt.js';
 import { getRandomDelay } from './utils/randomizer.js';
 
 function sleep(ms) {
@@ -87,7 +88,13 @@ async function runTasksForWallet(client, wallet, index, total, nextWalletAddress
         await sleep(getRandomDelay(4000, 7000));
     }
 
-    // 9. Validator Status (Quest: "Sign a block as a validator")
+    // 9. ASE Vegas Treasure (Quest: "Dig a cell in the ASE Vegas Treasure hunt")
+    if (process.env.ENABLE_TREASURE_HUNT !== 'false') {
+        results['Treasure Hunt (Dig)'] = await executeTreasureDig(client, wallet);
+        await sleep(getRandomDelay(3000, 6000));
+    }
+
+    // 10. Validator Status (Quest: "Sign a block as a validator")
     results['Validator Sign Block'] = await checkValidatorStatus(client, wallet);
 
     return results;
