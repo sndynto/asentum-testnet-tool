@@ -11,7 +11,8 @@
     "faucet:6h": "node src/faucetScheduler.js",
     "bet:asebet": "node -e \"import('./src/wallet.js').then(async w => { const { client, walletsList } = await w.loadAllWallets(); const { executeAseBet } = await import('./src/tasks/asebet.js'); for(const item of walletsList) await executeAseBet(client, item.wallet, 2); })\"",
     "lp:asedex": "node -e \"import('./src/wallet.js').then(async w => { const { client, walletsList } = await w.loadAllWallets(); const { executeAseDexLiquidity } = await import('./src/tasks/asedexLiquidity.js'); for(const item of walletsList) await executeAseDexLiquidity(client, item.wallet); })\"",
-    "dig:treasure": "node -e \"import('./src/wallet.js').then(async w => { const { client, walletsList } = await w.loadAllWallets(); const { executeTreasureDig } = await import('./src/tasks/treasureHunt.js'); for(const item of walletsList) await executeTreasureDig(client, item.wallet); })\""
+    "dig:treasure": "node -e \"import('./src/wallet.js').then(async w => { const { client, walletsList } = await w.loadAllWallets(); const { executeTreasureDig } = await import('./src/tasks/treasureHunt.js'); for(const item of walletsList) await executeTreasureDig(client, item.wallet); })\"",
+    "buy:loto": "node -e \"import('./src/wallet.js').then(async w => { const { client, walletsList } = await w.loadAllWallets(); const { executeLotoBuy } = await import('./src/tasks/lotoRaffle.js'); for(const item of walletsList) await executeLotoBuy(client, item.wallet); })\""
   },
   "keywords": [
     "asentum",

@@ -12,6 +12,7 @@ import { checkValidatorStatus } from './tasks/validatorCheck.js';
 import { executeAsepadBuy } from './tasks/asepad.js';
 import { executeAseBet } from './tasks/asebet.js';
 import { executeTreasureDig } from './tasks/treasureHunt.js';
+import { executeLotoBuy } from './tasks/lotoRaffle.js';
 import { runOrSkipTask } from './utils/dailyTracker.js';
 import { getRandomDelay } from './utils/randomizer.js';
 
@@ -103,7 +104,13 @@ async function runTasksForWallet(client, wallet, index, total, nextWalletAddress
         if (!results['Treasure Hunt (Dig)'].skipped) await sleep(getRandomDelay(3000, 6000));
     }
 
-    // 11. Validator Status (Quest: "Sign a block as a validator")
+    // 11. ASE Vegas Loto / Raffle (Quest: "Buy a Loto grid or a Raffle ticket on ASE Vegas")
+    if (process.env.ENABLE_LOTO_BUY !== 'false') {
+        results['ASE Vegas (Loto/Raffle)'] = await runOrSkipTask(wallet.address, 'ASE Vegas (Loto/Raffle)', () => executeLotoBuy(client, wallet));
+        if (!results['ASE Vegas (Loto/Raffle)'].skipped) await sleep(getRandomDelay(3000, 6000));
+    }
+
+    // 12. Validator Status (Quest: "Sign a block as a validator")
     results['Validator Sign Block'] = await checkValidatorStatus(client, wallet);
 
     return results;
