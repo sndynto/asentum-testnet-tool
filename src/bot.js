@@ -4,6 +4,7 @@ import { loadAllWallets } from './wallet.js';
 import { executeTransfer } from './tasks/transfer.js';
 import { executeAurasSwap } from './tasks/aurasSwap.js';
 import { executeAseDexSwap } from './tasks/asedexSwap.js';
+import { executeAseDexLiquidity } from './tasks/asedexLiquidity.js';
 import { executeAurasLiquidity } from './tasks/aurasLiquidity.js';
 import { executeSocialPost, executeSetProfile, getSocialStats } from './tasks/social.js';
 import { executeDeployContract } from './tasks/deployContract.js';
@@ -66,7 +67,13 @@ async function runTasksForWallet(client, wallet, index, total, nextWalletAddress
     results['AseDex Swap'] = await runOrSkipTask(wallet.address, 'AseDex Swap', () => executeAseDexSwap(client, wallet));
     if (!results['AseDex Swap'].skipped) await sleep(getRandomDelay(4000, 7000));
 
-    // 5. Add Liquidity on Auras DEX
+    // 5. Add Liquidity on AseDex
+    if (process.env.ENABLE_ASEDEX_LIQUIDITY !== 'false') {
+        results['AseDex Liquidity'] = await runOrSkipTask(wallet.address, 'AseDex Liquidity', () => executeAseDexLiquidity(client, wallet));
+        if (!results['AseDex Liquidity'].skipped) await sleep(getRandomDelay(4000, 7000));
+    }
+
+    // 6. Add Liquidity on Auras DEX
     if (process.env.ENABLE_AURAS_LIQUIDITY !== 'false') {
         results['Auras Liquidity'] = await runOrSkipTask(wallet.address, 'Auras Liquidity', () => executeAurasLiquidity(client, wallet));
         if (!results['Auras Liquidity'].skipped) await sleep(getRandomDelay(4000, 7000));

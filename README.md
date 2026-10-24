@@ -8,7 +8,7 @@ Perangkat baris perintah (CLI) untuk interaksi jaringan dan pengujian fungsi on-
 2. Transfer: Transaksi pengiriman ASE harian antar wallet (daisy-chain) atau ke alamat tujuan.
 3. Auras DEX Swap: Swap token melalui Auras Router.
 4. Auras Liquidity: Penambahan likuiditas ke Pool 1 Auras.
-5. AseDex Swap: Swap token pada kontrak AMM AseDex (`ase1cwpnkultxqjz9z09xwe7jlztw2uhuf8fklhzsm`).
+5. AseDex Swap & Liquidity: Swap token dan penyetoran likuiditas pada kontrak AMM AseDex (`ase1cwpnkultxqjz9z09xwe7jlztw2uhuf8fklhzsm`).
 6. Deploy Smart Contract: Deployment smart contract token berbasis JavaScript VM dengan ticker memecoin Solana unik.
 7. AsePad Buy: Pembelian token bonding curve pada platform AsePad (`ase1r57zd8sstugu4km2axf7ar85q0fj793vdlzt6v`).
 8. AseBet: Penempatan taruhan pada pasar prediksi terbuka di AseBet (`0xc91aef943a1a0e587e6b57959de0692d1a704879`).
@@ -70,6 +70,14 @@ Untuk memasang taruhan di AseBet:
 
 ```bash
 npm run bet:asebet
+```
+
+### Eksekusi AseDex Liquidity Saja
+
+Untuk menyetor likuiditas di Pool 1 AseDex:
+
+```bash
+npm run lp:asedex
 ```
 
 ### Eksekusi ASE Vegas Treasure Saja
