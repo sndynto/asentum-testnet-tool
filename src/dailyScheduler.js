@@ -7,18 +7,37 @@ dotenv.config();
 
 const cronExpression = process.env.CRON_SCHEDULE || '0 0 1 * * *';
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 console.log(chalk.bold.cyan('========================================================'));
 console.log(chalk.bold.yellow(`ASENTUM DAILY SCHEDULER AKTIF`));
 console.log(chalk.white(`Jadwal Cron: ${chalk.bold.green(cronExpression)}`));
 console.log(chalk.gray('Menjalankan putaran pertama sekarang, lalu berulang setiap hari.'));
 console.log(chalk.bold.cyan('========================================================\n'));
 
+async function executeInitialRun() {
+    const maxRetries = 3;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            await runBot();
+            console.log(chalk.gray(`\nPutaran pertama selesai. Menunggu jadwal berikutnya sesuai pola: ${cronExpression} ...\n`));
+            return;
+        } catch (err) {
+            console.error(chalk.red(`[WARN] Eksekusi awal percobaan ${attempt}/${maxRetries} gagal: ${err.message}`));
+            if (attempt < maxRetries) {
+                console.log(chalk.yellow(`Mencoba kembali eksekusi awal dalam 20 detik...`));
+                await sleep(20000);
+            } else {
+                console.error(chalk.red(`[NOTICE] Eksekusi awal tidak dapat diselesaikan karena gangguan jaringan/RPC. Cron scheduler tetap aktif untuk jadwal berikutnya.`));
+            }
+        }
+    }
+}
+
 // Run immediately on start
-runBot().then(() => {
-    console.log(chalk.gray(`\nMenunggu jadwal berikutnya sesuai pola: ${cronExpression} ...\n`));
-}).catch(err => {
-    console.error(chalk.red(`Error pada eksekusi awal: ${err.message}`));
-});
+executeInitialRun();
 
 // Setup recurring cron job
 const job = new CronJob(

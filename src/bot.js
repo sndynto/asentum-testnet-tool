@@ -15,6 +15,7 @@ import { executeTreasureDig } from './tasks/treasureHunt.js';
 import { executeLotoBuy } from './tasks/lotoRaffle.js';
 import { runOrSkipTask } from './utils/dailyTracker.js';
 import { getRandomDelay } from './utils/randomizer.js';
+import { withRpcRetry } from './utils/retry.js';
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -25,10 +26,16 @@ async function runTasksForWallet(client, wallet, index, total, nextWalletAddress
     console.log(chalk.bold.yellow(`     AKUN [${index}/${total}] - MEMULAI EKSEKUSI TUGAS`));
     console.log(chalk.bold.cyan(`========================================================`));
 
-    // Display Account Info
-    const balanceWei = await wallet.getBalance();
+    // Display Account Info (resilient to transient 502/503/network hiccups)
+    let balanceWei;
+    try {
+        balanceWei = await withRpcRetry(() => wallet.getBalance(), { label: 'Get Balance' });
+    } catch (err) {
+        console.log(chalk.yellow(`[WARN] Gagal mendapatkan saldo terkini (${err.message}), fallback 0 ASE.`));
+        balanceWei = 0n;
+    }
     const balanceAse = formatAse(balanceWei);
-    const socialStats = await getSocialStats(client, wallet);
+    const socialStats = await withRpcRetry(() => getSocialStats(client, wallet), { label: 'Social Stats' }).catch(() => ({ userPostCount: '0' }));
 
     console.log(chalk.white(`• Address (ase1)      : ${chalk.bold.yellow(wallet.address)}`));
     console.log(chalk.white(`• Address (0x)        : ${chalk.gray(wallet.addressHex)}`));
@@ -145,8 +152,16 @@ export async function runBot() {
         const item = walletsList[i];
         const nextWallet = (i + 1 < walletsList.length) ? walletsList[i + 1].wallet.address : (walletsList.length > 1 ? walletsList[0].wallet.address : null);
 
-        const res = await runTasksForWallet(client, item.wallet, i + 1, walletsList.length, nextWallet);
-        allResults.push({ wallet: item.wallet.address, results: res });
+        try {
+            const res = await runTasksForWallet(client, item.wallet, i + 1, walletsList.length, nextWallet);
+            allResults.push({ wallet: item.wallet.address, results: res });
+        } catch (walletErr) {
+            console.error(chalk.red(`\n[ERROR] Gagal memproses akun #${i + 1} (${item.wallet.address}): ${walletErr.message}`));
+            allResults.push({
+                wallet: item.wallet.address,
+                results: { 'Error Akun': { success: false, reason: walletErr.message } }
+            });
+        }
 
         if (i + 1 < walletsList.length) {
             const randomWalletDelay = Math.max(5000, getRandomDelay((baseDelaySec - 2) * 1000, (baseDelaySec + 5) * 1000));

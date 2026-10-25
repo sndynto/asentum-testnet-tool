@@ -55,7 +55,11 @@ export async function parseWallet(client, inputString, publicKeyInput = '') {
  */
 export async function loadAllWallets() {
     const rpcUrl = process.env.RPC_URL || 'https://testnet.asentum.com';
-    const client = new AsentumClient(rpcUrl);
+    const client = new AsentumClient(rpcUrl, {
+        retries: 8,
+        timeoutMs: 45000,
+        retryOnServerError: true
+    });
 
     const walletsList = [];
     const walletsFilePath = path.resolve(__dirname, '../wallets.txt');
