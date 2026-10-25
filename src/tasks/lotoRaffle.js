@@ -36,6 +36,12 @@ export async function executeLotoBuy(client, wallet, customGrid = null) {
         const priceAse = formatAse(priceWei);
         const maxn = Number(info.maxn || 15);
 
+        const maxAllowed = parseFloat(process.env.MAX_ALLOWED_TX_ASE || '999');
+        if (parseFloat(priceAse) > maxAllowed) {
+            console.log(chalk.yellow(`[Task: ASE Vegas Loto] Dilewati: Harga tiket kontrak (${priceAse} ASE) melampaui batas MAX_ALLOWED_TX_ASE = ${maxAllowed} ASE.`));
+            return { success: true, skipped: true, reason: `Exceeds MAX_ALLOWED_TX_ASE (Ticket price is ${priceAse} ASE)` };
+        }
+
         // Check wallet balance
         const balanceWei = await wallet.getBalance();
         if (balanceWei < priceWei + 10000000000000000n) {
