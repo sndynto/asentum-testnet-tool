@@ -26,7 +26,7 @@ export async function executeTreasureDig(client, wallet, targetCell = null) {
         const digPriceAse = formatAse(digPriceWei);
 
         const maxAllowed = parseFloat(process.env.MAX_ALLOWED_TX_ASE || '999');
-        if (parseFloat(digPriceAse) > maxAllowed) {
+        if (process.env.ENABLE_TREASURE_HUNT !== 'true' && parseFloat(digPriceAse) > maxAllowed) {
             console.log(chalk.yellow(`[Task: Treasure Hunt] Dilewati: Biaya petak kontrak (${digPriceAse} ASE) melampaui batas MAX_ALLOWED_TX_ASE = ${maxAllowed} ASE.`));
             return { success: true, skipped: true, reason: `Exceeds MAX_ALLOWED_TX_ASE (Dig price is ${digPriceAse} ASE)` };
         }

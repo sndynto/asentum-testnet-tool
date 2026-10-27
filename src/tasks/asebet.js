@@ -83,7 +83,7 @@ export async function executeAseBet(client, wallet, targetBets = 2) {
     console.log(chalk.cyan(`\n[Task: AseBet] Starting ${targetBets} bets on AseBet (asebet.uk)...`));
 
     const maxAllowed = parseFloat(process.env.MAX_ALLOWED_TX_ASE || '999');
-    if (1.0 > maxAllowed) {
+    if (process.env.ENABLE_ASEBET !== 'true' && 1.0 > maxAllowed) {
         console.log(chalk.yellow(`[Task: AseBet] Dilewati: Kontrak AseBet mewajibkan minimal 1.0 ASE per bet (melampaui batas MAX_ALLOWED_TX_ASE = ${maxAllowed} ASE).`));
         return { success: true, skipped: true, reason: 'Exceeds MAX_ALLOWED_TX_ASE (Contract minBet is 1.0 ASE)' };
     }
