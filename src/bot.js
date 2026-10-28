@@ -14,6 +14,7 @@ import { executeAseBet } from './tasks/asebet.js';
 import { executeTreasureDig } from './tasks/treasureHunt.js';
 import { executeLotoBuy } from './tasks/lotoRaffle.js';
 import { executeAseFlip } from './tasks/aseflip.js';
+import { executeAnotherShooter } from './tasks/anothershooter.js';
 import { runOrSkipTask } from './utils/dailyTracker.js';
 import { getRandomDelay } from './utils/randomizer.js';
 import { withRpcRetry } from './utils/retry.js';
@@ -118,13 +119,19 @@ async function runTasksForWallet(client, wallet, index, total, nextWalletAddress
         if (!results['ASE Vegas (Loto/Raffle)'].skipped) await sleep(getRandomDelay(3000, 6000));
     }
 
-    // 12. AseCasino ASEFlip (Quest: "Play a round of ASEFlip on AseCasino · dapp +30 XP")
+    // 12. AseCasino ASEFlip (Quest: "Play 3 rounds of ASEFlip on AseCasino · dapp +50 XP")
     if (process.env.ENABLE_ASEFLIP !== 'false') {
-        results['ASECasino (ASEFlip)'] = await runOrSkipTask(wallet.address, 'ASECasino (ASEFlip)', () => executeAseFlip(client, wallet));
-        if (!results['ASECasino (ASEFlip)'].skipped) await sleep(getRandomDelay(3000, 6000));
+        results['ASECasino (ASEFlip 3x)'] = await runOrSkipTask(wallet.address, 'ASECasino (ASEFlip 3x)', () => executeAseFlip(client, wallet, 3));
+        if (!results['ASECasino (ASEFlip 3x)'].skipped) await sleep(getRandomDelay(3000, 6000));
     }
 
-    // 13. Validator Status (Quest: "Sign a block as a validator")
+    // 13. AnotherShooter (Quest: "Play a game of AnotherShooter · dapp")
+    if (process.env.ENABLE_ANOTHER_SHOOTER !== 'false') {
+        results['AnotherShooter'] = await runOrSkipTask(wallet.address, 'AnotherShooter', () => executeAnotherShooter(client, wallet));
+        if (!results['AnotherShooter'].skipped) await sleep(getRandomDelay(3000, 6000));
+    }
+
+    // 14. Validator Status (Quest: "Sign a block as a validator")
     results['Validator Sign Block'] = await checkValidatorStatus(client, wallet);
 
     return results;
